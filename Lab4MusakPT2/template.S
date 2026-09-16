@@ -2,7 +2,7 @@
 //RCET3373
 //Musak
 //git
-
+//-Wl,-presetVect=0000h,-pcode=0008h
     
 ; PIC16F883 Configuration Bit Settings
 
@@ -60,9 +60,11 @@ Setup:
     
     BSF 0x03,6 
     BSF 0x03,5 ;set bank 3 
-    CLRF 0x89 ;anselh turn off
-    CLRF 0x88
-   
+  // CLRF 0x89 ;anselh turn off
+   // CLRF 0x88
+      CLRF 0x188   ; Clear ANSEL (Turns PORTA pins into digital I/O)
+    CLRF 0x189   ; Clear ANSELH (Turns PORTB pins into digital I/O)
+    
     BCF 0x03,6 ;set bank 0 active
     BCF 0x03,5 ;set bank 0
 
@@ -72,7 +74,8 @@ Main:
    call ButtonTest
    call LookupTable
    MOVWF countout
-   call Delay
+    
+   call OuterDelay
    MOVLW 0x01
    XORWF 0x05,1
   
@@ -81,36 +84,83 @@ Main:
    
    goto Main 
    
+
+
 ButtonTest:
-    BTFSC 0x06,0 ;testing if there is the button on rb7 being pressed 
+    BTFSS 0x06,0 ;testing if there is the button on rb7 being pressed  
+    goto ButtonOne
+    MOVLW 0
     MOVWF ButtonValue 
-    BTFSC 0x06,1 ;testing if there is the button on rb6 being pressed 
+    Return
+    ButtonOne:
+    BTFSS 0x06,1 ;testing if there is the button on rb6 being pressed 
+    goto ButtonTwo
+    MOVLW 1
     MOVWF ButtonValue 
-    BTFSC 0x06,2 ;testing if there is the button on rb5 being pressed 
-    MOVWf ButtonValue  
-    BTFSC 0x06,3 ;testing if there is the button on rb4 being pressed 
-    MOVWF ButtonValue    
-    BTFSC 0x06,4 ;testing if there is the button on rb3 being pressed 
-    MOVWF ButtonValue 	
-    BTFSC 0x06,5 ;testing if there is the button on rb2 being pressed 
+Return
+    ButtonTwo:
+    BTFSS 0x06,2 ;testing if there is the button on rb5 being pressed
+    goto ButtonThree
+    MOVLW 2
     MOVWF ButtonValue 
-    BTFSC 0x06,6 ;testing if there is the button on rb1 being pressed 
-    MOVWF ButtonValue 	   
-    BTFSC 0x06,7 ;testing if there is the button on rb0 being pressed 
-    MOVWF ButtonValue  
-  //  goto NoButton
-//NoButton:
-    BCF 0x05,0 
+    Return
+    ButtonThree:
+    BTFSS 0x06,3 ;testing if there is the button on rb4 being pressed 
+    goto ButtonFour
+    MOVLW 3
+    MOVWF ButtonValue
+Return
+    ButtonFour:  
+    BTFSS 0x06,4 ;testing if there is the button on rb3 being pressed 
+    goto ButtonFive
+    MOVLW 4
+    MOVWF ButtonValue
+Return
+    ButtonFive:
+    BTFSS 0x06,5 ;testing if there is the button on rb2 being pressed 
+    goto ButtonSix
+    MOVLW 5
+    MOVWF ButtonValue
+Return
+    ButtonSix:
+    BTFSS 0x06,6 ;testing if there is the button on rb1 being pressed 
+    goto ButtonSeven
+    MOVLW 6
+    MOVWF ButtonValue
+Return
+    ButtonSeven:
+    BTFSS 0x06,7 ;testing if there is the button on rb0 being pressed 
+    goto NoButton
+    MOVLW 7
+    MOVWF ButtonValue
     return
+    NoButton:
+    BCF 0x05,0 
+    CLRF ButtonValue
+    return
+
     
-Delay:                     
- DECFSZ countout,1                  ;1(2) 1 TCY if not zero, 2 TCY if zero
- GOTO Delay                  ;2 TCY
- return 
+OuterDelay: 
+MOVLW 0X04
+MOVWF incount 
+    
+InDelay: 
+
+DECFSZ incount,1 
+GOTO InDelay
+
+DECFSZ countout,1 
+GOTO OuterDelay 
+
+Return
+               ;1(2) 1 TCY if not zero, 2 TCY if zero
+                 ;2 TCY
+ 
    
 LookupTable: 
-    MOVF ButtonValue,W 
-    ADDWF PCL,1 
+    MOVF ButtonValue,W
+    ADDWF PCL,1
+    RETLW 0x00
     RETLW 0xEE	    ;note C3, RB0
     RETLW 0xD4	    ;note B3, RB1
     RETLW 0xBD	    ;note A3, RB2
