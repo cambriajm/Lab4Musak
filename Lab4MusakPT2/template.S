@@ -87,9 +87,7 @@ Main:
    //goto NoButton
    
    goto Main 
-   
-
-
+ 
 ButtonTest:
     BTFSC 0x06,7 ;testing if there is the button on rb7 being pressed  
     goto ButtonSix
