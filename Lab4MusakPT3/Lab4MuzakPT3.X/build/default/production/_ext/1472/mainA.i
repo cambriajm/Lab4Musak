@@ -2376,6 +2376,10 @@ Setup:
     BCF 0x86,1
     BCF 0x86,0
 
+
+
+   BCF 0x81,7
+
     BSF 0x03,6
     BCF 0x03,5 ;set bank 2
     BSF 0x09,1 ;turn TTG function off
@@ -2431,11 +2435,13 @@ ButtonTest:
     goto TestR6
     BTFSS 0x06,7
     goto TestR7
+    goto NoButton
+   NoButton:
     BCF 0x05,0
     CLRF ButtonValue
 return
 
-    return
+
 
     TestR4:
  BSF 0x03,5
@@ -2444,30 +2450,24 @@ return
  BCF 0x03,5
  MOVLW 0x00
  MOVWF 0x06 ; Write directly to PORTB (0x06)
+ goto TestR4C0
     TestR4C0:
  BTFSS 0x06,0
- goto TestR4C1
- MOVLW 0x11
- MOVWF ButtonValue
  goto DisplayD
+
     TestR4C1:
  BTFSS 0x06,1
- goto TestR4C2
- MOVLW 0x10
- MOVWF ButtonValue
  goto DisplayPound
+
     TestR4C2:
  BTFSS 0x06,2
- goto TestR4C3
- MOVWF 0x0F
- MOVLW ButtonValue
  goto Display0
+
     TestR4C3:
  BTFSS 0x06,3
- return
- MOVWF 0x0E
- MOVLW ButtonValue
  goto DisplayStar
+ goto TestR5
+
 
  TestR5:
     BSF 0x03,5
@@ -2480,28 +2480,20 @@ return
     goto TestR5C0
     TestR5C0:
  BTFSS 0x06,0
- goto TestR5C1
- MOVWF 0x0D
- MOVLW ButtonValue
  goto DisplayC
+
     TestR5C1:
  BTFSS 0x06,1
- goto TestR5C2
- MOVWF 0x0C
- MOVLW ButtonValue
  goto Display9
+
     TestR5C2:
  BTFSS 0x06,2
- goto TestR5C3
- MOVWF 0x0B
- MOVLW ButtonValue
  goto Display8
+
     TestR5C3:
  BTFSS 0x06,3
- return
- MOVWF 0x0A
- MOVLW ButtonValue
  goto Display7
+ goto TestR6
 
 TestR6:
     BSF 0x03,5
@@ -2514,28 +2506,20 @@ TestR6:
     goto TestR6C0
     TestR6C0:
  BTFSS 0x06,0
- goto TestR6C1
- MOVWF 0x09
- MOVLW ButtonValue
  goto DisplayB
+
     TestR6C1:
  BTFSS 0x06,1
- goto TestR6C2
- MOVWF 0x08
- MOVLW ButtonValue
  goto Display6
+
     TestR6C2:
  BTFSS 0x06,2
- goto TestR6C3
- MOVWF 0x07
- MOVLW ButtonValue
  goto Display5
+
     TestR6C3:
  BTFSS 0x06,3
- return
- MOVWF 0x06
- MOVLW ButtonValue
  goto Display4
+ goto TestR7
 
 TestR7:
     BSF 0x03,5
@@ -2548,28 +2532,22 @@ TestR7:
     goto TestR7C0
     TestR7C0:
      BTFSS 0x06,0
-     goto TestR7C1
-     MOVWF 0x05
-     MOVLW ButtonValue
      goto DisplayA
+
     TestR7C1:
      BTFSS 0x06,1
-     goto TestR7C2
-     MOVWF 0x04
-     MOVLW ButtonValue
      goto Display3
+
     TestR7C2:
      BTFSS 0x06,2
-     goto TestR7C3
-     MOVWF 0x03
-     MOVLW ButtonValue
      goto Display2
+
     TestR7C3:
      BTFSS 0x06,3
-     return
-     MOVWF 0x02
-     MOVLW ButtonValue
      goto Display1
+     goto ButtonTest
+
+
 
 
 OuterDelay:
@@ -2593,6 +2571,7 @@ LookupTable:
     MOVF ButtonValue,W
     ADDWF PCL,1
     RETLW 0x00
+    RETLW 0x00
     RETLW 0xEE ;note C3, ((PORTB) and 07Fh), 0
     RETLW 0xD4 ;note B3, ((PORTB) and 07Fh), 1
     RETLW 0xBD ;note A3, ((PORTB) and 07Fh), 2
@@ -2608,73 +2587,105 @@ LookupTable:
     RETLW 0x47 ;note A4
     RETLW 0x3F ;note B4
     RETLW 0x3B ;note C5
-    RETLW 0x35 ;note D%
+    RETLW 0x35 ;note D5
 
 
 
  Display0:
   MOVLW 0x30
   MOVWF 0x07
+  MOVLW 0x0F
+  MOVWF ButtonValue
   return
  Display1:
   MOVLW 0x31
   MOVWF 0x07
+  MOVLW 0x02
+  MOVWF ButtonValue
   return
  Display2:
   MOVLW 0x32
   MOVWF 0x07
+  MOVLW 0x03
+  MOVWF ButtonValue
   return
  Display3:
   MOVLW 0x33
   MOVWF 0x07
+  MOVLW 0x04
+  MOVWF ButtonValue
  return
  Display4:
   MOVLW 0x34
   MOVWF 0x07
+  MOVLW 0x06
+  MOVWF ButtonValue
   return
  Display5:
   MOVLW 0x35
   MOVWF 0x07
+  MOVLW 0x07
+  MOVWF ButtonValue
  return
  Display6:
   MOVLW 0x36
   MOVWF 0x07
+  MOVLW 0x08
+  MOVWF ButtonValue
   return
  Display7:
   MOVLW 0x37
   MOVWF 0x07
+  MOVLW 0x0A
+  MOVWF ButtonValue
   return
  Display8:
   MOVLW 0x38
   MOVWF 0x07
+  MOVLW 0x0B
+  MOVWF ButtonValue
   return
  Display9:
   MOVLW 0x39
   MOVWF 0x07
+  MOVLW 0x0C
+  MOVWF ButtonValue
   return
  DisplayA:
   MOVLW 0x41
   MOVWF 0x07
+  MOVLW 0x05
+  MOVWF ButtonValue
  return
  DisplayB:
   MOVLW 0x42
   MOVWF 0x07
+  MOVLW 0x09
+  MOVWF ButtonValue
   return
  DisplayC:
   MOVLW 0x43
   MOVWF 0x07
+  MOVLW 0x0D
+  MOVWF ButtonValue
   return
  DisplayD:
   MOVLW 0x44
   MOVWF 0x07
+  MOVLW 0x11
+  MOVWF ButtonValue
   return
  DisplayStar:
   MOVLW 0x2A
   MOVWF 0x07
+  MOVLW 0x0E
+  MOVWF ButtonValue
   return
  DisplayPound:
   MOVLW 0x23
   MOVWF 0x07
+  MOVLW 0x10
+  MOVWF ButtonValue
   return
 
  End
